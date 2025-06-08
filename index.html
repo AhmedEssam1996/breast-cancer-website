@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Breast Cancer Prediction - Ahmed Essam</title>
+
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cairo&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* ---- Base Styles ---- */
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      transition: background 0.5s ease;
+    }
+
+    /* Dark mode */
+    body.dark {
+      background: linear-gradient(135deg, #2c2c54, #120b3c);
+      color: #ccc;
+    }
+
+    .container-glass {
+      background: rgba(255 255 255 / 0.12);
+      backdrop-filter: blur(25px);
+      border-radius: 25px;
+      box-shadow:
+        0 4px 30px rgba(123, 97, 255, 0.4),
+        inset 0 0 15px rgba(255 255 255 / 0.2);
+      padding: 45px 35px;
+      max-width: 480px;
+      width: 100%;
+      margin-top: 50px;
+      color: #fff;
+      transition: background 0.4s, color 0.4s;
+      border: 1px solid rgba(123, 97, 255, 0.6);
+    }
+
+    body.dark .container-glass {
+      background: rgba(0,0,0,0.35);
+      border-color: #7b61ffcc;
+      color: #ddd;
+    }
+
+    h1 {
+      text-align: center;
+      font-weight: 900;
+      font-size: 2.8rem;
+      margin-bottom: 5px;
+      letter-spacing: 2px;
+      text-shadow: 0 3px 12px rgba(123, 97, 255, 0.8);
+      user-select: none;
+    }
+
+    h2 {
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 40px;
+      font-size: 1.4rem;
+      color: #dcd6f7;
+      user-select: none;
+      letter-spacing: 1px;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+
+    form label {
+      font-weight: 700;
+      color: #e0e0e0;
+      user-select: none;
+    }
+
+    input.form-control {
+      background: rgba(255 255 255 / 0.2);
+      border: none;
+      border-radius: 14px;
+      box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.2);
+      color: #fff;
+      font-weight: 600;
+      transition: background 0.4s, color 0.4s, box-shadow 0.3s ease;
+      font-size: 1rem;
+      padding: 10px 15px;
+    }
+
+    input.form-control::placeholder {
+      color: #ccc;
+      opacity: 0.7;
+      font-weight: 500;
+    }
+
+    input.form-control:focus {
+      background: rgba(255 255 255 / 0.45);
+      box-shadow: 0 0 12px 3px #7b61ffcc;
+      outline: none;
+      color: #222;
+      font-weight: 700;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    button.btn-submit {
+      background: linear-gradient(45deg, #7b61ff, #ae8fff);
+      border: none;
+      border-radius: 30px;
+      padding: 16px 40px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      box-shadow:
+        0 6px 20px rgba(123, 97, 255, 0.7),
+        0 0 8px #7b61ffcc inset;
+      transition: background 0.35s ease, transform 0.2s ease;
+      width: 100%;
+      margin-top: 30px;
+      user-select: none;
+    }
+
+    button.btn-submit:hover {
+      background: linear-gradient(45deg, #5a42cc, #9a6fff);
+      transform: translateY(-4px);
+      box-shadow:
+        0 12px 30px rgba(90, 66, 204, 0.85),
+        0 0 15px #7b61ffcc inset;
+    }
+
+    button.btn-submit:active {
+      transform: translateY(-1px);
+      box-shadow:
+        0 6px 15px rgba(90, 66, 204, 0.6),
+        0 0 10px #7b61ffcc inset;
+    }
+
+    .result-text {
+      margin-top: 35px;
+      padding: 22px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      border-radius: 20px;
+      text-align: center;
+      background: linear-gradient(45deg, #7b61ff, #ae8fff);
+      color: white;
+      box-shadow: 0 10px 40px rgba(123, 97, 255, 0.9);
+      animation: fadeIn 0.8s ease forwards;
+      user-select: none;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Dark toggle button */
+    .dark-toggle {
+      position: fixed;
+      top: 25px;
+      right: 25px;
+      background: #7b61ff;
+      color: white;
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      font-size: 28px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow:
+        0 8px 28px rgba(123, 97, 255, 0.75),
+        0 0 15px #7b61ffcc inset;
+      transition: background 0.3s ease, transform 0.2s ease;
+      z-index: 1001;
+      user-select: none;
+    }
+    .dark-toggle:hover {
+      background: #5a42cc;
+      transform: scale(1.08);
+    }
+    .dark-toggle:active {
+      transform: scale(0.95);
+    }
+
+    /* Chatbot styles */
+    #chatbot-container {
+      position: fixed;
+      bottom: 90px;
+      right: 30px;
+      width: 350px;
+      max-height: 420px;
+      background: rgba(255 255 255 / 0.95);
+      border-radius: 22px;
+      box-shadow:
+        0 15px 45px rgba(0, 0, 0, 0.3),
+        inset 0 0 20px rgba(123, 97, 255, 0.15);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      font-family: 'Cairo', Arial, sans-serif;
+      color: #222;
+      z-index: 1000;
+      user-select: none;
+      animation: slideUp 0.5s ease forwards;
+    }
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #chatbot-header {
+      background: linear-gradient(90deg, #7b61ff, #ae8fff);
+      color: white;
+      padding: 14px 25px;
+      font-weight: 800;
+      font-size: 1.2rem;
+      cursor: grab;
+      user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(123, 97, 255, 0.6);
+    }
+    #chatbot-header span {
+      cursor: pointer;
+      font-weight: 900;
+      font-size: 1.6rem;
+      user-select: none;
+      transition: color 0.3s ease;
+    }
+    #chatbot-header span:hover {
+      color: #ccc;
+    }
+
+    #chatbot-messages {
+      flex-grow: 1;
+      padding: 18px 20px;
+      overflow-y: auto;
+      background: #fff;
+      color: #222;
+      font-size: 1rem;
+      line-height: 1.4;
+      user-select: text;
+      scrollbar-width: thin;
+      scrollbar-color: #7b61ff #e1dfff;
+    }
+    #chatbot-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+    #chatbot-messages::-webkit-scrollbar-track {
+      background: #e1dfff;
+      border-radius: 5px;
+    }
+    #chatbot-messages::-webkit-scrollbar-thumb {
+      background-color: #7b61ff;
+      border-radius: 5px;
+    }
+
+    #chatbot-input {
+      display: flex;
+      border-top: 1px solid #ccc;
+      background: #f0f0ff;
+      padding: 10px 15px;
+    }
+
+    #chatbot-input input {
+      flex-grow: 1;
+      border: none;
+      padding: 12px 18px;
+      font-size: 1.05rem;
+      outline: none;
+      border-radius: 12px 0 0 12px;
+      font-family: 'Cairo', Arial, sans-serif;
+      user-select: text;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s ease;
+    }
+    #chatbot-input input:focus {
+      box-shadow: inset 0 0 8px #7b61ffcc;
+    }
+
+    #chatbot-input button {
+      background: linear-gradient(45deg, #7b61ff, #ae8fff);
+      border: none;
+      color: white;
+      padding: 14px 28px;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 0 12px 12px 0;
+      font-size: 1.1rem;
+      transition: background 0.3s ease;
+      user-select: none;
+      box-shadow: 0 5px 15px rgba(123, 97, 255, 0.7);
+    }
+    #chatbot-input button:hover {
+      background: linear-gradient(45deg, #5a42cc, #9a6fff);
+    }
+    #chatbot-input button:active {
+      background: linear-gradient(45deg, #4a34aa, #7b61ff);
+    }
+
+    /* Chat toggle button */
+    #chatbot-toggle-btn {
+      position: fixed;
+      bottom: 25px;
+      right: 30px;
+      background: linear-gradient(45deg, #7b61ff, #ae8fff);
+      border-radius: 50%;
+      width: 64px;
+      height: 64px;
+      color: white;
+      font-size: 34px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow:
+        0 10px 35px rgba(123, 97, 255, 0.9),
+        0 0 20px #7b61ffcc inset;
+      z-index: 1002;
+      transition: background 0.3s ease, transform 0.2s ease;
+      user-select: none;
+    }
+    #chatbot-toggle-btn:hover {
+      background: linear-gradient(45deg, #5a42cc, #9a6fff);
+      transform: scale(1.1);
+    }
+    #chatbot-toggle-btn:active {
+      transform: scale(0.9);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 420px) {
+      #chatbot-container {
+        width: 100vw;
+        height: 70vh;
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
+        max-height: none;
+      }
+      .container-glass {
+        max-width: 95vw;
+        padding: 35px 25px;
+      }
+      button.btn-submit {
+        padding: 14px 20px;
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dark-toggle" id="darkToggle" title="Toggle Dark Mode">🌓</div>
+
+  <div class="container-glass">
+    <h1>Breast Cancer Prediction</h1>
+    <h2>by Ahmed Essam</h2>
+    <form id="predictionForm" autocomplete="off" spellcheck="false">
+      <div class="mb-3">
+        <label for="inputAge" class="form-label">Age</label>
+        <input
+          type="number"
+          class="form-control"
+          id="inputAge"
+          name="age"
+          min="20"
+          max="100"
+          placeholder="Enter your age"
+          required
+        />
+      </div>
+
+      <div class="mb-3">
+        <label for="inputTumorSize" class="form-label">Tumor Size (mm)</label>
+        <input
+          type="number"
+          class="form-control"
+          id="inputTumorSize"
+          name="tumor_size"
+          min="1"
+          max="50"
+          placeholder="Size of the tumor"
+          required
+        />
+      </div>
+
+      <div class="mb-3">
+        <label for="inputNodeStatus" class="form-label">Lymph Node Status</label>
+        <select class="form-select" id="inputNodeStatus" name="node_status" required>
+          <option value="" disabled selected>Select status</option>
+          <option value="0">No Nodes</option>
+          <option value="1">1-3 Nodes</option>
+          <option value="2">More than 3 Nodes</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-submit">Predict</button>
+    </form>
+
+    <div id="result" class="result-text" style="display:none;"></div>
+  </div>
+
+  <!-- Chatbot Toggle Button -->
+  <div id="chatbot-toggle-btn" title="Open Assistant Bot">💬</div>
+
+  <!-- Chatbot Container -->
+  <div id="chatbot-container" role="dialog" aria-label="Assistant chatbot">
+    <div id="chatbot-header">
+      Breast Cancer Bot <span id="chatbot-close" title="Close Chat">×</span>
+    </div>
+    <div id="chatbot-messages" tabindex="0" aria-live="polite" aria-atomic="false"></div>
+    <form id="chatbot-input" aria-label="Send a message">
+      <input
+        type="text"
+        id="chatbot-user-input"
+        placeholder="Ask me anything..."
+        autocomplete="off"
+        required
+        aria-required="true"
+      />
+      <button type="submit" aria-label="Send message">Send</button>
+    </form>
+  </div>
+
+  <!-- Bootstrap Bundle JS (includes Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Dark mode toggle logic
+    const darkToggle = document.getElementById('darkToggle');
+    darkToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+    });
+
+    // Prediction logic (mock)
+    const form = document.getElementById('predictionForm');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const age = +form.age.value;
+      const tumorSize = +form.tumor_size.value;
+      const nodeStatus = +form.node_status.value;
+
+      // Example simple logic for demo
+      let riskScore = 0;
+      riskScore += age > 50 ? 2 : 1;
+      riskScore += tumorSize > 20 ? 3 : 1;
+      riskScore += nodeStatus * 2;
+
+      let risk = 'Low Risk';
+      if (riskScore > 5) risk = 'High Risk';
+      else if (riskScore > 3) risk = 'Moderate Risk';
+
+      resultDiv.textContent = `Prediction: ${risk}`;
+      resultDiv.style.display = 'block';
+      resultDiv.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // Chatbot toggle logic
+    const chatbotToggleBtn = document.getElementById('chatbot-toggle-btn');
+    const chatbotContainer = document.getElementById('chatbot-container');
+    const chatbotClose = document.getElementById('chatbot-close');
+
+    chatbotToggleBtn.addEventListener('click', () => {
+      chatbotContainer.style.display = 'flex';
+      chatbotContainer.querySelector('#chatbot-user-input').focus();
+    });
+    chatbotClose.addEventListener('click', () => {
+      chatbotContainer.style.display = 'none';
+      chatbotToggleBtn.focus();
+    });
+
+    // Chatbot messages
+    const chatbotMessages = document.getElementById('chatbot-messages');
+    const chatbotInputForm = document.getElementById('chatbot-input');
+
+    // Sample simple chatbot response for demo
+    chatbotInputForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const inputField = chatbotInputForm.querySelector('input');
+      const userMsg = inputField.value.trim();
+      if (!userMsg) return;
+
+      appendMessage('You', userMsg, 'user');
+      inputField.value = '';
+      inputField.disabled = true;
+
+      // Simulate bot thinking
+      setTimeout(() => {
+        const botReply = getBotReply(userMsg);
+        appendMessage('Bot', botReply, 'bot');
+        inputField.disabled = false;
+        inputField.focus();
+      }, 1200);
+    });
+
+    function appendMessage(sender, text, type) {
+      const msgDiv = document.createElement('div');
+      msgDiv.classList.add('message', type);
+      msgDiv.style.marginBottom = '15px';
+      msgDiv.style.fontSize = '1rem';
+      msgDiv.style.userSelect = 'text';
+
+      if(type === 'user') {
+        msgDiv.style.textAlign = 'right';
+        msgDiv.style.color = '#7b61ff';
+      } else {
+        msgDiv.style.textAlign = 'left';
+        msgDiv.style.color = '#444';
+      }
+
+      msgDiv.textContent = `${sender}: ${text}`;
+      chatbotMessages.appendChild(msgDiv);
+      chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }
+
+    function getBotReply(message) {
+      // Basic mock replies for demo
+      message = message.toLowerCase();
+      if (message.includes('hello') || message.includes('hi')) {
+        return 'Hello! How can I assist you with breast cancer prediction today?';
+      }
+      if (message.includes('risk') || message.includes('predict')) {
+        return 'Please fill the form and click Predict to get your risk assessment.';
+      }
+      if (message.includes('age')) {
+        return 'Age is an important factor for prediction, generally risk increases with age.';
+      }
+      if (message.includes('tumor')) {
+        return 'Tumor size is measured in millimeters and affects the prediction score.';
+      }
+      if (message.includes('node')) {
+        return 'Lymph node status indicates if cancer has spread to the lymph nodes.';
+      }
+      return 'Sorry, I did not understand. Please ask about the form or breast cancer prediction.';
+    }
+  </script>
+</body>
+</html>
